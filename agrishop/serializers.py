@@ -1,14 +1,26 @@
 from rest_framework import serializers
 from .models import CustomUser, Product, Cart, LandBidding, Bid
+from django.contrib.auth.hashers import make_password
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = ['id', 'email', 'full_name', 'address', 'phone_number']
+        fields = ['id', 'email', 'full_name', 'phone_number', 'address', 'role', 'business_name', 'password']
         extra_kwargs = {
+            'password': {'write_only': True},
             'email': {'required': True},
             'full_name': {'required': True}
         }
+
+    def validate(self, data):
+        if data.get('role') == 'seller' and not data.get('business_name'):
+            raise serializers.ValidationError({"business_name": "Sellers must provide a business name."})
+        return data
+
+    def create(self, validated_data):
+        validated_data['password'] = make_password(validated_data['password'])  # Hash password
+        return CustomUser.objects.create(**validated_data)
+
 
 class ProductSerializer(serializers.ModelSerializer):
     class Meta:

@@ -1,42 +1,39 @@
 from django.db import models
-from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from django.core.validators import MinValueValidator
 from PIL import Image
 from django.db import models
-from django.contrib.auth.models import BaseUserManager, AbstractBaseUser
-import uuid
+from django.contrib.auth.models import AbstractUser
 
-class CustomUserManager(BaseUserManager):
-    def create_user(self, email, full_name, password=None):
-        if not email:
-            raise ValueError('Users must have an email address')
-        
-        user = self.model(
-            email=self.normalize_email(email),
-            full_name=full_name
-        )
-        
-        user.set_password(password)
-        user.save(using=self._db)
-        return user
+class CustomUser(AbstractUser):
+    ROLE_CHOICES = [
+        ('customer', 'Customer'),
+        ('seller', 'Seller'),
+    ]
 
-class CustomUser(AbstractBaseUser):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    email = models.EmailField(unique=True)
+    email = models.EmailField(unique=True)  # Ensure email is unique
     full_name = models.CharField(max_length=255)
     phone_number = models.CharField(max_length=20, blank=True, null=True)
     address = models.TextField(blank=True, null=True)
-    
-    is_active = models.BooleanField(default=True)
-    is_admin = models.BooleanField(default=False)
+    role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='customer')
+    business_name = models.CharField(max_length=255, blank=True, null=True)
 
-    objects = CustomUserManager()
+    groups = models.ManyToManyField(
+        "auth.Group",
+        related_name="customuser_set",  # Avoids conflict with `auth.User.groups`
+        blank=True
+    )
+    user_permissions = models.ManyToManyField(
+        "auth.Permission",
+        related_name="customuser_permissions",  # Avoids conflict with `auth.User.user_permissions`
+        blank=True
+    )
 
-    USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['full_name']
+    USERNAME_FIELD = 'email'  # Login with email instead of username
+    REQUIRED_FIELDS = ['full_name']  # Fields required when using createsuperuser
 
     def __str__(self):
-        return self.email
+        return f"{self.email} ({self.role})"
+
 
 class Category(models.Model):
     name = models.CharField(max_length=100, unique=True)
