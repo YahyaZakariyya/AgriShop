@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import CustomUser, Product, Cart, LandBidding, Bid
+from .models import CustomUser, Product, Cart, LandBidding, Bid, Category
 from django.contrib.auth.hashers import make_password
 
 class UserSerializer(serializers.ModelSerializer):
@@ -21,6 +21,10 @@ class UserSerializer(serializers.ModelSerializer):
         validated_data['password'] = make_password(validated_data['password'])  # Hash password
         return CustomUser.objects.create(**validated_data)
 
+class CategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = '__all__'
 
 class ProductSerializer(serializers.ModelSerializer):
     class Meta:
