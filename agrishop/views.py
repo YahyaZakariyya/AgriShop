@@ -7,8 +7,8 @@ from rest_framework.exceptions import ValidationError
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
 from django_filters.rest_framework import DjangoFilterBackend
-from .models import CustomUser, Product, Cart, LandBidding, Bid
-from .serializers import UserSerializer, ProductSerializer, CartSerializer, LandBiddingSerializer, BidSerializer
+from .models import CustomUser, Product, Cart, LandBidding, Bid, Category
+from .serializers import UserSerializer, ProductSerializer, CartSerializer, LandBiddingSerializer, BidSerializer, CategorySerializer 
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = CustomUser.objects.all()
@@ -21,6 +21,10 @@ class ProductViewSet(viewsets.ModelViewSet):
     filterset_fields = ['category']
     search_fields = ['title', 'description']
     ordering_fields = ['price', 'created_at']
+
+class CategoryViewSet(viewsets.ModelViewSet):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
 
 class CartViewSet(viewsets.ModelViewSet):
     serializer_class = CartSerializer
